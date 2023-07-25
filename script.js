@@ -59,7 +59,7 @@ export class YouTrackCsvImporter {
         : undefined;
       const description = mdDesc;
       const priority = mapPriority(row.Priority);
-      const type = `${row['Issue Type']}`;
+      const type = `${row['Type']}`;
       const release =
         row.Release && row.Release.length > 0
           ? `Release: ${row.Release}`
