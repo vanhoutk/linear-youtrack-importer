@@ -13,7 +13,6 @@ import { importIssues } from './importIssues.js';
  */
 export class YouTrackCsvImporter {
   constructor(filePath) {
-    console.log('filePath:', filePath);
     this.filePath = filePath;
   }
 
@@ -26,7 +25,6 @@ export class YouTrackCsvImporter {
   }
 
   import = async () => {
-    console.log(this.filePath)
     const data = await csv().fromFile(this.filePath);
 
     const importData = {
@@ -130,7 +128,6 @@ const youTrackCsvImport = async () => {
 };
 
 const prompt = async () => {
-  console.log(BASE_PATH);
   try {
     const importAnswers = await inquirer.prompt([
       {
@@ -146,7 +143,6 @@ const prompt = async () => {
       await importIssues(importAnswers.linearApiKey, importer);
     }
 
-    console.log(importAnswers);
   } catch (error) {
     console.error(error);
   }
