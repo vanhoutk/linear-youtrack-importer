@@ -66,7 +66,7 @@ export class YouTrackCsvImporter {
         row.Assignee && row.Assignee.length > 0 ? row.Assignee : undefined;
       const status = row.Status;
 
-      const labels = [type];
+      const labels = type ? [type] : [];
       if (release) {
         labels.push(release);
       }
