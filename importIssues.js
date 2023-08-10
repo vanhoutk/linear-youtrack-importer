@@ -111,23 +111,6 @@ export const importIssues = async (apiKey, importer) => {
       message: "Do you want to assign these issues to yourself?",
       default: true,
     },
-    {
-      type: "list",
-      name: "targetAssignee",
-      message: "Assign to user:",
-      choices: () => {
-        // const map = users.map(user => ({
-        //   name: user.name,
-        //   value: user.id,
-        // }));
-        const map = [];
-        map.push({ name: "[Unassigned]", value: "" });
-        return map;
-      },
-      when: (answers) => {
-        return !answers.selfAssign;
-      },
-    },
   ]);
 
   let teamKey;
@@ -202,9 +185,9 @@ export const importIssues = async (apiKey, importer) => {
 
   const existingUserMap = {};
   for (const user of users) {
-    const userName = user.name?.toLowerCase();
-    if (userName && user.id && !existingUserMap[userName]) {
-      existingUserMap[userName] = user.id;
+    const userEmail = user.email?.toLowerCase();
+    if (userEmail && user.id && !existingUserMap[userEmail]) {
+      existingUserMap[userEmail] = user.id;
     }
   }
 
@@ -249,8 +232,7 @@ export const importIssues = async (apiKey, importer) => {
       ? existingUserMap[issue.assigneeId.toLowerCase()]
       : undefined;
 
-    const assigneeId =
-      existingAssigneeId || importAnswers.selfAssign
+    const assigneeId = existingAssigneeId ? existingAssigneeId : importAnswers.selfAssign
         ? viewer
         : !!importAnswers.targetAssignee && importAnswers.targetAssignee.length > 0
         ? importAnswers.targetAssignee

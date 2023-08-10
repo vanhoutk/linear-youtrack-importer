@@ -3,6 +3,7 @@ import csv from 'csvtojson';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 import j2m from 'jira2md';
 import { importIssues } from './importIssues.js';
+import { getTeamMemberName } from './utils/replaceTeam.js';
 
 /**
  * Import issues from a Jira CSV export.
@@ -17,11 +18,11 @@ export class YouTrackCsvImporter {
   }
 
   get name() {
-    return 'Jira (CSV)';
+    return 'Youtrack (CSV)';
   }
 
   get defaultTeamName() {
-    return 'Jira';
+    return 'Youtrack';
   }
 
   import = async () => {
@@ -30,18 +31,20 @@ export class YouTrackCsvImporter {
     const importData = {
       issues: [],
       labels: {},
+      descriptions: {},
       users: {},
       statuses: {},
     };
 
-    const statuses = Array.from(new Set(data.map(row => row.Status)));
-    const assignees = Array.from(new Set(data.map(row => row.Assignee)));
+    const statuses = Array.from(new Set(data.map(row => row.State)));
+    const assignees = Array.from(new Set(data.map(row => getTeamMemberName(row.Assignee))));
 
     for (const user of assignees) {
       importData.users[user] = {
         name: user,
       };
     }
+
     for (const status of statuses) {
       if (importData.statuses?.[status]) {
         importData.statuses[status] = {
@@ -58,15 +61,20 @@ export class YouTrackCsvImporter {
       const description = mdDesc;
       const priority = mapPriority(row.Priority);
       const type = `${row['Type']}`;
+      const tags = row.Tags ? row.Tags.split(',') : [];
       const release =
         row.Release && row.Release.length > 0
           ? `Release: ${row.Release}`
           : undefined;
       const assigneeId =
-        row.Assignee && row.Assignee.length > 0 ? row.Assignee : undefined;
-      const status = row.Status;
+        row.Assignee && row.Assignee.length > 0 ? getTeamMemberName(row.Assignee) : undefined;
+      const status = row.Resolved ? 'Done' : row.State;
 
       const labels = type ? [type] : [];
+      if (tags) {
+        labels.push(...tags);
+      }
+
       if (release) {
         labels.push(release);
       }
@@ -123,8 +131,8 @@ const questions = [
 
 const youTrackCsvImport = async () => {
   const answers = await inquirer.prompt(questions);
-  const jiraImporter = new YouTrackCsvImporter(`${BASE_PATH}/${answers.youtrackFilePath}`);
-  return jiraImporter;
+  const ytImporter = new YouTrackCsvImporter(`${BASE_PATH}/${answers.youtrackFilePath}`);
+  return ytImporter;
 };
 
 const prompt = async () => {
